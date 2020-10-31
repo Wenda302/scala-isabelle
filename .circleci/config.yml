@@ -7,9 +7,9 @@ orbs:
 
 workflows:
   version: 2
-  macos2020:
+  macos2019:
 #    when:
-#      equal: [ 1b4d64a5d9b174936b5ee7b81203ad76b58f3624, << pipeline.git.base_revision >> ]
+#      equal: [ e5d52214d9bb319ad27b126865b0cef8c7a74344, << pipeline.git.base_revision >> ]
     jobs:
       - test:
           filters:
@@ -21,7 +21,7 @@ workflows:
                 - test-macos
   no_workflow:
 #    unless:
-#      equal: [ 1b4d64a5d9b174936b5ee7b81203ad76b58f3624, << pipeline.git.base_revision >> ]
+#      equal: [ e5d52214d9bb319ad27b126865b0cef8c7a74344, << pipeline.git.base_revision >> ]
     jobs:
       - do_nothing_job: { filters: { branches: { only: [ nonexistingbranch_iuotbgfpgdcnmohgfky ] } } }
 
@@ -47,25 +47,26 @@ jobs:
       # Download and cache Isabelle
       - restore_cache:
           keys:
-            - v2-isabelle-2020-macos
+            - v3-isabelle-2019-macos
+            - v2-isabelle-2019-macos
       - run:
-          name: Downloading Isabelle 2020 (if needed)
+          name: Downloading Isabelle 2019 (if needed)
           shell: bash
           command: |
-            if ! [ -e "$HOME/install/Isabelle2020" ]; then
+            if ! [ -e "$HOME/install/Isabelle2019" ]; then
               mkdir -p ~/install
               case macos in
                 windows)
-                  curl "https://isabelle.in.tum.de/website-Isabelle2020/dist/Isabelle2020.exe" -o /tmp/isabelle.exe
+                  curl "https://isabelle.in.tum.de/website-Isabelle2019/dist/Isabelle2019.exe" -o /tmp/isabelle.exe
                   7z x -y -o"$HOME/install" /tmp/isabelle.exe;;
-                linux)
-                  curl https://isabelle.in.tum.de/website-Isabelle2020/dist/Isabelle2020_linux.tar.gz | tar -x -z -C ~/install;;
+                linux|macos)
+                  curl https://isabelle.in.tum.de/website-Isabelle2019/dist/Isabelle2019_macos.tar.gz | tar -x -z -C ~/install;;
               esac
             fi
       - save_cache:
           paths:
-            - ~/install/Isabelle2020.app/Isabelle
-          key: v2-isabelle-2020-macos
+            - ~/install/Isabelle2019.app/Isabelle
+          key: v3-isabelle-2019-macos
 
       # Download and cache dependencies
       - restore_cache:
@@ -101,10 +102,10 @@ jobs:
             case macos in
               windows)
                 # Isabelle process calls rebaseall and then fails, unless we deactivate it
-                > ~/install/Isabelle2020.app/Isabelle/contrib/cygwin/isabelle/rebaseall
-                cygpath -w ~/install/Isabelle2020.app/Isabelle > .isabelle-home;;
+                > ~/install/Isabelle2019.app/Isabelle/contrib/cygwin/isabelle/rebaseall
+                cygpath -w ~/install/Isabelle2019.app/Isabelle > .isabelle-home;;
               linux|macos)
-                echo ~/install/Isabelle2020.app/Isabelle > .isabelle-home;;
+                echo ~/install/Isabelle2019.app/Isabelle > .isabelle-home;;
             esac
 
             ~/install/sbt "testOnly -- -u scalatest-reports" </dev/null
